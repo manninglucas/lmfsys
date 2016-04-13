@@ -3,11 +3,10 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
-#include "types.h"
+#include "block.h"
 #include "inode.h"
 #include "bitmap.h"
 #include "superblock.h"
-#include "block.h"
 
 #define BLOCK_SIZE 4096
 
@@ -23,33 +22,24 @@ static unsigned file_size(const char *file_name)
     return sb.st_size;
 }
 
-static void write(const void *data, uint32 size, FILE *disk)
-{
-    for (uint8 *byte = (uint8*) &data; size--; ++byte) {
+static void write_disk(const void *data, uint32_t size, FILE *disk, uint32_t offset)
+{ 
+    fseek(disk, offset, SEEK_SET);
+    for (uint8_t *byte = (uint8_t*) &data; size--; ++byte) {
         fputc(*byte, disk);
     }
 }
 
 void make_filesystem(char *disk_name, size_t disk_sz)
 {
-    //opening for w+ zeroes out the file first 
-    FILE *disk = fopen(disk_name, "w+");
-    int total_blocks = disk_sz / BLOCK_SIZE;
+    //opening for w zeroes out the file first 
+    FILE *disk = fopen(disk_name, "r+");
 
     superblock *sb = new_superblock(disk_sz);
-    uint32 sb_size = sizeof(superblock);
     
-    write((void *)sb, sizeof(superblock), disk);
-}
+    write_disk((void *)sb, sizeof(superblock), disk, 0);
 
-void write_file(const char *file_path, char* data)
-{
-
-}
-
-void read_file(const char *file_path, const char *path)
-{
-
+    fclose(disk);
 }
 
 int main(int argc, char *argv[])

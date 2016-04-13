@@ -1,15 +1,14 @@
-#include "types.h"
-#include "superblock.h"
 #include <stdlib.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include "superblock.h"
 
-superblock *new_superblock(uint32 disk_sz)
+superblock *new_superblock(uint32_t disk_sz)
 {
     superblock *sb = malloc(sizeof(superblock));
 
-    if (!sb || disk_sz < 0x40000)
+    if (!sb || disk_sz < 0x4000)
         goto error;
 
     sb->id = 1;
