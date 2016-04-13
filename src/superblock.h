@@ -3,6 +3,7 @@
 
 typedef struct {
     uint16_t id; //How the "OS" identifies the fs
+    char name[8];
     uint32_t inode_count;
     uint32_t block_count;
     uint32_t res_block_count;
@@ -15,5 +16,7 @@ typedef struct {
 } superblock;
 
 superblock *new_superblock(uint32_t disk_sz);
+
+void read_sb(const char *filename);
 
 #endif

@@ -25,19 +25,19 @@ static unsigned file_size(const char *file_name)
 static void write_disk(const void *data, uint32_t size, FILE *disk, uint32_t offset)
 { 
     fseek(disk, offset, SEEK_SET);
-    for (uint8_t *byte = (uint8_t*) &data; size--; ++byte) {
-        fputc(*byte, disk);
-    }
+    fwrite(data, size, 1, disk);
 }
 
 void make_filesystem(char *disk_name, size_t disk_sz)
 {
     //opening for w zeroes out the file first 
-    FILE *disk = fopen(disk_name, "r+");
+    FILE *disk = fopen(disk_name, "rb+");
 
     superblock *sb = new_superblock(disk_sz);
     
     write_disk((void *)sb, sizeof(superblock), disk, 0);
+
+    free(sb);
 
     fclose(disk);
 }
@@ -45,6 +45,8 @@ void make_filesystem(char *disk_name, size_t disk_sz)
 int main(int argc, char *argv[])
 {
     make_filesystem("disk", file_size("disk"));
+
+    read_sb("disk");
     
     return 0;
 }

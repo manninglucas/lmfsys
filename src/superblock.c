@@ -12,6 +12,8 @@ superblock *new_superblock(uint32_t disk_sz)
         goto error;
 
     sb->id = 1;
+
+    strcpy(sb->name, "Lucas");
     
     //sizes stay constant for now
     sb->block_size = 0x1000;
@@ -37,4 +39,15 @@ error:
     //some failure stuff
     fprintf(stderr, "Could not initialize superblock: %s", strerror(errno));
     exit(EXIT_FAILURE);
+}
+
+
+void read_sb(const char *filename)
+{
+    FILE *disk = fopen("disk", "rb");
+    superblock *sb = malloc(sizeof(superblock));
+    fread(sb, sizeof(superblock), 1, disk);        
+    printf("Name: %s \nBlock count: %i", sb->name, sb->block_count);
+    free(sb);
+    fclose(disk);
 }
