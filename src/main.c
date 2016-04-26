@@ -42,6 +42,42 @@ void make_filesystem(char *disk_name, size_t disk_sz)
     fclose(disk);
 }
 
+static void write_file(FILE *f, uint32_t size, const char *path)
+{
+    //loop through inode bitmap
+    
+
+    //write to inode bitmap
+
+    //allocate inodes
+    int block_count = (size / BLOCK_SIZE) + 1;
+    int inode_count = (block_count / 15) + 1;
+
+    //allocate blocks
+    //
+    //write bitmaps
+    //
+    //write blocks  
+    //
+}
+
+static void create_file(FILE *f, uint32_t size, const char *path)
+{
+    //find an unallcated inode
+    int in_block_loc = free_bm_addr();
+
+    //allocate the inode
+    int block_count = (size / BLOCK_SIZE) + 1;
+    inode *in = new_inode(in_block_loc, block_count);
+
+    //write the inode
+}
+
+static void read_file(const void *filename)
+{
+
+}
+
 int main(int argc, char *argv[])
 {
     make_filesystem("disk", file_size("disk"));

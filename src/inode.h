@@ -18,4 +18,6 @@ typedef struct {
     int generation;
 } inode;
 
+inode* new_inode(int inode_num, int block_num);
+
 #endif

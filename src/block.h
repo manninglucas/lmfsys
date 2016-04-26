@@ -2,6 +2,7 @@
 #define BLOCK_H
 
 typedef struct {
-    int a;
+    uint32_t addr;
+    uint8_t *data;
 } block;
 #endif
