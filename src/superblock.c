@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include "util.h"
 #include "superblock.h"
 
 superblock *new_superblock(uint32_t disk_sz)

@@ -1,37 +1,51 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "util.h"
 #include "bitmap.h"
 
-int free_bm_addr(BM_TYPE bitmap)
+int free_bm_addr(BM_TYPE type, FILE *disk)
 {
     int free_bm_addr = -1;
-    if (bitmap == INODE) {
-        FILE *disk = fopen("disk", "rb+");  
-        
-        int uint32_offset = 0;
-        while (free_bm_addr != -1) {
-            uint32_t *bm_section; 
-            fseek(disk, sizeof(uint32_t), SEEK_CUR);
-            fread(bm_section, sizeof(uint32_t), 1, disk);
+    int offset = 0;
+    
+    bitmap *bm = malloc(sizeof(bitmap)); 
+    bm->type = type;
+    fseek(disk, bm_start_addr(type), SEEK_SET);
+    fread(bm->data, sizeof(bm->data), 1, disk);
 
-            int bit_pos = empty_bit_pos(*bm_section);
-            if (bit_pos == -1)
-                uint32_offset++;
-            else
-                return bit_pos + (32*uint32_offset);
-        }
-            
-    } else {
-    }
+    while (free_bm_addr != -1) {
+        uint8_t bm_section = bm->data[offset]; 
 
-    return -1;
+        int bit_pos = empty_bit_pos(bm_section);
+
+        if (bit_pos == -1) {
+            offset++;
+         } else {
+            free_bm_addr = bit_pos + (sizeof(uint8_t)*offset);
+            fill_bit(&bm_section, bit_pos);
+         }
+    }        
+    write_disk((void *)bm->data, sizeof(bm->data), disk, bm_start_addr(type));
+    free(bm);
+    return free_bm_addr;
 }
 
-static int empty_bit_pos(uint32_t bitmap)
+int bm_start_addr(BM_TYPE type)
 {
-    for (int i = 0; i < 32; i++) {
-        if (~bitmap & 1) return i;
-        bitmap >>= 1; 
+    if (type == INODE) return INODE_BM_START;
+    else return DATA_BM_START;
+}
+
+void fill_bit(uint8_t *bitmap_section, int pos)
+{
+   (*bitmap_section) |= (1 << pos); 
+}
+
+int empty_bit_pos(uint8_t bitmap_section)
+{
+    for (int i = 0; i < sizeof(bitmap_section); i++) {
+        if (~bitmap_section & 1) return i;
+        bitmap_section >>= 1; 
     } 
     return -1;
 }
