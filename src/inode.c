@@ -1,25 +1,28 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
 #include "util.h"
 #include "block.h"
 #include "inode.h"
 #include "bitmap.h"
 
 //max size checks
-inode *new_inode(int inode_num, int block_count, FILE *disk)
+inode *new_inode(int inode_num, int size, const char *name, FILE *disk)
 {
     inode *in = malloc(sizeof(inode));
-    in->blocks = block_count;
-    in->uid = 1111;
+    in->blocks = (size / BLOCK_SIZE) + 1;
+    in->uid = inode_num;
     in->ctime = time(NULL);
     in->mtime = time(NULL);
     in->dtime = time(NULL);
     in->disk = disk;
+    in->size = size;
+    strcpy(in->name, name);
 
     int blk_ptrs = 0;
 
-    for (; blk_ptrs < 12; ++blk_ptrs) {
+    for (; blk_ptrs < 12 && blk_ptrs != in->blocks; ++blk_ptrs) {
         in->data_block[blk_ptrs] = free_bm_addr(DATA, disk);         
     }
     //this loop takes care of single indirect pointers
@@ -29,10 +32,10 @@ inode *new_inode(int inode_num, int block_count, FILE *disk)
     return in;
 }
 
-static void alloc_indr_blocks(int *blk_ptrs, int blks_needed, inode *in)
+void alloc_indr_blocks(int *blk_ptrs, int blks_needed, inode *in)
 {
     for (int ptr_depth = 0;
-            *blk_ptrs != blks_needed || ptr_depth != MAX_PTR_DEPTH; 
+            *blk_ptrs != blks_needed && ptr_depth != MAX_PTR_DEPTH; 
             ptr_depth++) {
         in->indr_ptr[ptr_depth] = free_bm_addr(DATA, in->disk);
 
@@ -44,7 +47,7 @@ static void alloc_indr_blocks(int *blk_ptrs, int blks_needed, inode *in)
     }
 }
 
-static block* new_indr_block(int *blk_ptrs, int blks_needed, uint32_t addr,
+block* new_indr_block(int *blk_ptrs, int blks_needed, uint32_t addr,
         int ptr_depth, FILE *disk)
 {
     block *indr_blk = new_block(addr);
@@ -64,4 +67,13 @@ static block* new_indr_block(int *blk_ptrs, int blks_needed, uint32_t addr,
         if (++(*blk_ptrs) == blks_needed) break;
     }
     return indr_blk;
+}
+
+void read_inode(int inode_num, FILE *disk)
+{
+    fseek(disk, INODE_START_ADDR + sizeof(inode)*inode_num, SEEK_SET);
+    inode* inode = malloc(sizeof(inode)); 
+    fread(inode, sizeof(inode), 1, disk);
+    printf("INODE #%i:\nName: %s\nindirect pointer: %i\n", inode->uid, inode->name, inode->data_block[0]);
+    free(inode);
 }
