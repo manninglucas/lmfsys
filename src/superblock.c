@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "util.h"
+#include "inode.h"
 #include "superblock.h"
 
 superblock *new_superblock(uint32_t disk_sz)
@@ -42,6 +43,13 @@ error:
     exit(EXIT_FAILURE);
 }
 
+superblock *fs_sb(FILE *disk)
+{
+    superblock *sb = malloc(sizeof(superblock));
+    fseek(disk, 0, SEEK_SET);
+    fread(sb, sizeof(superblock), 1, disk);        
+    return sb;
+}
 
 void read_sb(const char *filename)
 {

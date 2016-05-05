@@ -4,9 +4,9 @@
 #define MAX_PTR_DEPTH 2
 
 typedef struct {
-    char name[32];
-    short mode;
+    int type;
     short uid;
+    int num;
     int size;
     int time;
     int ctime;
@@ -22,10 +22,12 @@ typedef struct {
     FILE *disk;
 } inode;
 
-inode* new_inode(int inode_num, int size, const char *name, FILE *disk);
-block* new_indr_block(int *blk_ptrs, int blks_needed, uint32_t addr,
-        int ptr_depth, FILE *disk);
-void alloc_indr_blocks(int *blk_ptrs, int blks_needed, inode *in);
+inode* new_inode(int size, int type, FILE *disk);
 void read_inode(int inode_num, FILE *disk);
+inode *inode_at_num(int inum, FILE *disk);
 
+void alloc_blocks(inode *in, int blks_needed);
+void alloc_indr_blocks(inode *in, int blks_needed);
+block* new_indr_block(inode *in, int blks_needed, uint32_t addr,
+        int ptr_depth);
 #endif

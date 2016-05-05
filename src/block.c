@@ -23,3 +23,11 @@ void write_block(block *blk, FILE *disk)
     int block_offset = DATA_START_ADDR + (BLOCK_SIZE * blk->addr);
     write_disk((void *)blk->data, sizeof(blk->data), disk, block_offset);
 }
+
+block *block_at_addr(uint32_t addr, FILE *disk)
+{
+    fseek(disk, DATA_START_ADDR + BLOCK_SIZE*addr, SEEK_SET);
+    block* blk = new_block(addr);
+    fread(blk->data, sizeof(blk->data), 1, disk);
+    return blk;
+}
