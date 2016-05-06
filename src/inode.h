@@ -16,15 +16,14 @@ typedef struct {
     short links_count;
     int blocks;
     int flags;
+    uint32_t end_block;
     uint32_t data_block[13];
     uint32_t indr_ptr[2];
-    //need this for virtual purposes
-    FILE *disk;
 } inode;
 
-inode* new_inode(int size, int type, FILE *disk);
-void read_inode(int inode_num, FILE *disk);
-inode *inode_at_num(int inum, FILE *disk);
+inode* new_inode(int size, int type);
+void read_inode(int inode_num);
+inode *inode_at_num(int inum);
 
 void alloc_blocks(inode *in, int blks_needed);
 void alloc_indr_blocks(inode *in, int blks_needed);

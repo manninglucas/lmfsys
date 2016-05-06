@@ -18,16 +18,21 @@ void write_ptr_to_block(block *blk, uint32_t ptr, int offset)
         blk->data[offset+i] = *byte;
 }
 
-void write_block(block *blk, FILE *disk)
+void write_byte_to_block(block *blk, uint8_t byte, int offset)
 {
-    int block_offset = DATA_START_ADDR + (BLOCK_SIZE * blk->addr);
-    write_disk((void *)blk->data, sizeof(blk->data), disk, block_offset);
+
 }
 
-block *block_at_addr(uint32_t addr, FILE *disk)
+void write_block_to_disk(block *blk)
 {
-    fseek(disk, DATA_START_ADDR + BLOCK_SIZE*addr, SEEK_SET);
+    int block_offset = DATA_START_ADDR + (BLOCK_SIZE * blk->addr);
+    write_disk((void *)blk->data, sizeof(blk->data), sb->disk, block_offset);
+}
+
+block *block_at_addr(uint32_t addr)
+{
+    fseek(sb->disk, DATA_START_ADDR + BLOCK_SIZE*addr, SEEK_SET);
     block* blk = new_block(addr);
-    fread(blk->data, sizeof(blk->data), 1, disk);
+    fread(blk->data, sizeof(blk->data), 1, sb->disk);
     return blk;
 }

@@ -8,5 +8,5 @@ typedef struct {
     uint32_t blocks; //num of blocks allocated to file 
 } entry;
     
-void create_dir_entry(const char *name, int dir_inum, int data_inum, FILE *disk);
+void create_dir_entry(const char *name, int dir_inum, int data_inum);
 #endif

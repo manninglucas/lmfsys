@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include "util.h"
 
-void write_disk(const void *data, uint32_t size, FILE *disk, uint32_t offset)
+void write_disk(const void *data, uint32_t size, uint32_t offset)
 { 
-    fseek(disk, offset, SEEK_SET);
-    fwrite(data, size, 1, disk);
+    fseek(sb->disk, offset, SEEK_SET);
+    fwrite(data, size, 1, sb->disk);
 }
 
 

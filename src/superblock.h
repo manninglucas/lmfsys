@@ -14,12 +14,11 @@ typedef struct {
     uint32_t inode_bmap;
     uint32_t block_bmap;
     uint32_t root_inum;
+    FILE *disk;
 } superblock;
 
 superblock *new_superblock(uint32_t disk_sz);
 
 void read_sb(const char *filename);
-
-superblock *fs_sb(FILE *disk);
 
 #endif

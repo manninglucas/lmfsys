@@ -3,15 +3,15 @@
 #include "util.h"
 #include "bitmap.h"
 
-int free_bm_addr(BM_TYPE type, FILE *disk)
+int free_bm_addr(BM_TYPE type)
 {
     int free_bm_addr = -1;
     int offset = 0;
     
     bitmap *bm = malloc(sizeof(bitmap)); 
     bm->type = type;
-    fseek(disk, bm_start_addr(type), SEEK_SET);
-    fread(bm->data, sizeof(bm->data), 1, disk);
+    fseek(sb->disk, bm_start_addr(type), SEEK_SET);
+    fread(bm->data, sizeof(bm->data), 1, sb->disk);
 
     while (free_bm_addr == -1) {
         uint8_t bm_section = bm->data[offset]; 
@@ -26,7 +26,7 @@ int free_bm_addr(BM_TYPE type, FILE *disk)
             bm->data[offset] = bm_section;
          }
     }       
-    write_disk((void *)bm->data, sizeof(bm->data), disk, bm_start_addr(type));
+    write_disk((void *)bm->data, sizeof(bm->data), sb->disk, bm_start_addr(type));
     free(bm);
     return free_bm_addr;
 }
