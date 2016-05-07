@@ -29,4 +29,10 @@ void alloc_blocks(inode *in, int blks_needed);
 void alloc_indr_blocks(inode *in, int blks_needed);
 block* new_indr_block(inode *in, int blks_needed, uint32_t addr,
         int ptr_depth);
+
+
+void dealloc_blocks(inode *in, int blks2remove);
+void dealloc_indr_blocks(inode *in, int blks_needed);
+void remove_indr_block(inode *in, int blks_needed, uint32_t addr,
+        int ptr_depth);
 #endif

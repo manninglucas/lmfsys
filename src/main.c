@@ -43,14 +43,15 @@ static void create_file(uint32_t size, int dir_inum,
         const char *name)
 {
     //allocate the inode
-    inode *in = new_inode(size, FILE_INODE, sb->disk);
-    create_dir_entry(name, dir_inum, in->num, sb->disk);
+    inode *in = new_inode(size, FILE_INODE);
+    create_dir_entry(name, dir_inum, in->num);
 
     //write the inode
     int offset = INODE_START_ADDR + (in->num * sizeof(inode));
-    write_disk((void *)in, sizeof(inode), sb->disk, offset);
+    write_disk((void *)in, sizeof(inode), offset);
     free(in);
 }
+
 
 int main(int argc, char *argv[])
 {

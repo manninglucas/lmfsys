@@ -16,7 +16,8 @@ typedef struct {
 
 int free_bm_addr(BM_TYPE type);
 int empty_bit_pos(uint8_t bitmap_section);
-void fill_bit(uint8_t *bitmap_section, int pos);
+void flip_bit(uint8_t *bitmap_section, int pos);
 int bm_start_addr(BM_TYPE type);
+void mark_empty_at_addr(uint32_t addr, BM_TYPE type);
 
 #endif

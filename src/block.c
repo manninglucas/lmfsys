@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "util.h"
 #include "block.h"
+#include "bitmap.h"
 
 block *new_block(uint32_t addr)
 {
@@ -35,4 +36,14 @@ block *block_at_addr(uint32_t addr)
     block* blk = new_block(addr);
     fread(blk->data, sizeof(blk->data), 1, sb->disk);
     return blk;
+}
+
+void erase_block(block *blk)
+{
+    for (int i = 0; i < BLOCK_SIZE; ++i)
+       blk->data[i] = 0; 
+
+    mark_empty_at_addr(blk->addr, DATA);
+    
+    write_block_to_disk(blk);
 }
