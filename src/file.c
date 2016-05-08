@@ -12,7 +12,7 @@ void append_data_to_file(int inum, void *data, size_t size)
     block *cur_blk = block_at_addr(in->end_block); 
     int pos = in->size % BLOCK_SIZE;
 
-    for (uint8_t *addr = data; size != 0; addr++, size--) {
+    for (u8 *addr = data; size != 0; addr++, size--) {
         write_byte_to_block(cur_blk, *addr, pos++);
         in->size += 1;
         if (pos / BLOCK_SIZE != 0) {
@@ -34,20 +34,27 @@ void write_data_to_file(int inum, void *data, size_t size, int offset)
 
 void read_file(int inum)
 {
-    
+    inode *in = inode_at_num(inum);   
+    block *b = block_at_addr(in->data_block[0]);
+    int blocknum = 0;
+    for (int bytepos = 0; bytepos != in->size; bytepos++) {
+        if (bytepos % BLOCK_SIZE == 0 && bytepos != 0) {
+            b = next_block_in_file(blocknum++, in);
+        }
+    }
 }
 
 //eventually make this recursive... somehow....
 //This function is useless but I spent a lot of time on it. :(
-uint32_t find_block_addr(inode *in, int block_offset)
+u32 find_block_addr(inode *in, int block_offset)
 {
     if (block_offset < 13) return in->data_block[block_offset];
 
     //indirect pointer
     if (block_offset < 13 + MAX_INDIR_PTRS) {
         block *indr_block = block_at_addr(in->indr_ptr[0]);
-        uint32_t addr = (uint32_t)indr_block->data[
-            (block_offset - 13)*sizeof(uint32_t)];
+        u32 addr = (u32)indr_block->data[
+            (block_offset - 13)*sizeof(u32)];
         free(indr_block);
         return addr;
     }
@@ -56,11 +63,11 @@ uint32_t find_block_addr(inode *in, int block_offset)
     int blockpos = (block_offset - 13 - MAX_INDIR_PTRS) % MAX_INDIR_PTRS;
 
     block *doub_indr_block = block_at_addr(in->indr_ptr[1], sb->disk);
-    uint32_t indr_blockpos = 
-        (uint32_t)doub_indr_block->data[blocknum*sizeof(uint32_t)];
+    u32 indr_blockpos = 
+        (u32)doub_indr_block->data[blocknum*sizeof(u32)];
 
     block *indr_block = block_at_addr(indr_blockpos, sb->disk);
-    uint32_t addr = (uint32_t)indr_block->data[blockpos*sizeof(uint32_t)];
+    u32 addr = (u32)indr_block->data[blockpos*sizeof(u32)];
 
     free(indr_block);
     free(doub_indr_block);

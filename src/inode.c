@@ -53,14 +53,14 @@ void alloc_indr_blocks(inode *in, int blks_needed)
     }
 }
 
-block* new_indr_block(inode *in, int blks_needed, uint32_t addr,
+block* new_indr_block(inode *in, int blks_needed, u32 addr,
         int ptr_depth)
 {
     block *indr_blk = new_block(addr);
 
     for (int used_ptrs = 0; 
-            used_ptrs*sizeof(uint32_t) < BLOCK_SIZE; used_ptrs++) {
-        uint32_t ptr2data = free_bm_addr(DATA); 
+            used_ptrs*sizeof(u32) < BLOCK_SIZE; used_ptrs++) {
+        u32 ptr2data = free_bm_addr(DATA); 
         int offset = used_ptrs*sizeof(used_ptrs);
         write_ptr_to_block(indr_blk, ptr2data, offset);
 
@@ -106,7 +106,7 @@ void dealloc_indr_blocks(inode *in, int blks_needed)
     }
 }
 
-void remove_indr_block(inode *in, int blks_needed, uint32_t addr,
+void remove_indr_block(inode *in, int blks_needed, u32 addr,
         int ptr_depth)
 {
     block *indr_blk = block_at_addr(addr);
@@ -115,7 +115,7 @@ void remove_indr_block(inode *in, int blks_needed, uint32_t addr,
         % MAX_INDIR_PTRS;
 
     while (end_ptr_pos > 0) {
-        uint32_t *ptr = (uint32_t*)&indr_blk->data[end_ptr_pos];
+        u32 *ptr = (u32*)&indr_blk->data[end_ptr_pos];
        
         if (ptr_depth > 0)
             remove_indr_block(in, blks_needed, *ptr, --ptr_depth);
@@ -126,7 +126,7 @@ void remove_indr_block(inode *in, int blks_needed, uint32_t addr,
 
         end_ptr_pos--;
         if(--(in->blocks) != blks_needed) {
-            in->end_block = *((uint32_t*)&indr_blk->data[end_ptr_pos]); 
+            in->end_block = *((u32*)&indr_blk->data[end_ptr_pos]); 
             break;
         }
     }

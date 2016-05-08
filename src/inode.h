@@ -16,9 +16,9 @@ typedef struct {
     short links_count;
     int blocks;
     int flags;
-    uint32_t end_block;
-    uint32_t data_block[13];
-    uint32_t indr_ptr[2];
+    u32 end_block;
+    u32 data_block[13];
+    u32 indr_ptr[2];
 } inode;
 
 inode* new_inode(int size, int type);
@@ -27,12 +27,12 @@ inode *inode_at_num(int inum);
 
 void alloc_blocks(inode *in, int blks_needed);
 void alloc_indr_blocks(inode *in, int blks_needed);
-block* new_indr_block(inode *in, int blks_needed, uint32_t addr,
+block* new_indr_block(inode *in, int blks_needed, u32 addr,
         int ptr_depth);
 
 
 void dealloc_blocks(inode *in, int blks2remove);
 void dealloc_indr_blocks(inode *in, int blks_needed);
-void remove_indr_block(inode *in, int blks_needed, uint32_t addr,
+void remove_indr_block(inode *in, int blks_needed, u32 addr,
         int ptr_depth);
 #endif

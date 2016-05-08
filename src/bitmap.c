@@ -14,14 +14,14 @@ int free_bm_addr(BM_TYPE type)
     fread(bm->data, sizeof(bm->data), 1, sb->disk);
 
     while (free_bm_addr == -1) {
-        uint8_t bm_section = bm->data[offset]; 
+        u8 bm_section = bm->data[offset]; 
 
         int bit_pos = empty_bit_pos(bm_section);
 
         if (bit_pos == -1) {
             offset++;
          } else {
-            free_bm_addr = bit_pos + (sizeof(uint8_t)*offset);
+            free_bm_addr = bit_pos + (sizeof(u8)*offset);
             flip_bit(&bm_section, bit_pos);
             bm->data[offset] = bm_section;
          }
@@ -37,12 +37,12 @@ int bm_start_addr(BM_TYPE type)
     else return DATA_BM_START;
 }
 
-void flip_bit(uint8_t *bitmap_section, int pos)
+void flip_bit(u8 *bitmap_section, int pos)
 {
    (*bitmap_section) ^= (1 << pos); 
 }
 
-int empty_bit_pos(uint8_t bitmap_section)
+int empty_bit_pos(u8 bitmap_section)
 {
     for (int i = 0; i < 8; i++) {
         if ((~bitmap_section >> i) & 1) return i;
@@ -50,7 +50,7 @@ int empty_bit_pos(uint8_t bitmap_section)
     return -1;
 }
 
-void mark_empty_at_addr(uint32_t addr, BM_TYPE type)
+void mark_empty_at_addr(u32 addr, BM_TYPE type)
 {
     int free_bm_addr = -1;
     int offset = 0;

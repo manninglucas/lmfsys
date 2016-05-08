@@ -39,7 +39,7 @@ void make_filesystem(size_t disk_sz, FILE *disk)
     free(sb);
 }
 
-static void create_file(uint32_t size, int dir_inum,
+static void create_file(u32 size, int dir_inum,
         const char *name)
 {
     //allocate the inode
