@@ -7,10 +7,10 @@ typedef struct {
 } block;
 
 block *new_block(u32 addr);
-void write_ptr_to_block(block *blk, u32 ptr, int offset);
 void write_block_to_disk(block *blk);
 block *block_at_addr(u32 addr);
-void write_byte_to_block(block *blk, u8 byte, int offset);
+void write_data_to_block(block *blk, void *data, int size, int offset);
 
 void erase_block(block *blk);
+block *block_at_num(int ptrnum, inode *in);
 #endif

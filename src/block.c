@@ -14,16 +14,13 @@ block *new_block(u32 addr)
     return blk;
 }
 
-void write_ptr_to_block(block *blk, u32 ptr, int offset)
-{ 
-    int i = 0;
-    for (u8 *byte = (u8*)&ptr; i < sizeof(u32); ++byte, ++i)
-        blk->data[offset+i] = *byte;
-}
-
-void write_byte_to_block(block *blk, u8 byte, int offset)
+void write_data_to_block(block *blk, void *data, int size, int offset)
 {
+    int i = 0;
+    for (u8 *byte = (u8*)&data; i < size; ++byte, ++i)
+        blk->data[offset+i] = *byte;
 
+    write_block_to_disk(blk);
 }
 
 void write_block_to_disk(block *blk)
@@ -50,10 +47,9 @@ void erase_block(block *blk)
     write_block_to_disk(blk);
 }
 
-block *next_block_in_file(int prev_ptrnum, inode *in)
+block *block_at_num(int ptrnum, inode *in)
 {
     //first parts easy enough just grab the next data block
-    int ptrnum = prev_ptrnum++;
     if (ptrnum < 13) 
         return block_at_addr(in->data_block[ptrnum]);
     //subtract the blocks that arent in the block of pointers

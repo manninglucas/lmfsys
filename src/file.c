@@ -12,8 +12,8 @@ void append_data_to_file(int inum, void *data, size_t size)
     block *cur_blk = block_at_addr(in->end_block); 
     int pos = in->size % BLOCK_SIZE;
 
-    for (u8 *addr = data; size != 0; addr++, size--) {
-        write_byte_to_block(cur_blk, *addr, pos++);
+    for (u8 *byte = data; size != 0; byte++, size--) {
+        write_data_to_block(cur_blk, byte, sizeof(u8), pos++);
         in->size += 1;
         if (pos / BLOCK_SIZE != 0) {
             pos = 0;
@@ -32,46 +32,35 @@ void write_data_to_file(int inum, void *data, size_t size, int offset)
     append_data_to_file(inum, data, size);
 }
 
-void read_file(int inum)
+void read_file(int inum, FILE *out)
 {
     inode *in = inode_at_num(inum);   
     block *b = block_at_addr(in->data_block[0]);
     int blocknum = 0;
     for (int bytepos = 0; bytepos != in->size; bytepos++) {
-        if (bytepos % BLOCK_SIZE == 0 && bytepos != 0) {
-            b = next_block_in_file(blocknum++, in);
-        }
+        if (bytepos % BLOCK_SIZE == 0 && bytepos != 0)
+            b = block_at_num(++blocknum, in);
+        fputc(b->data[bytepos], out); 
     }
 }
 
-//eventually make this recursive... somehow....
-//This function is useless but I spent a lot of time on it. :(
-u32 find_block_addr(inode *in, int block_offset)
+void write_file(int inum, FILE *inf, int size, int offset)
 {
-    if (block_offset < 13) return in->data_block[block_offset];
-
-    //indirect pointer
-    if (block_offset < 13 + MAX_INDIR_PTRS) {
-        block *indr_block = block_at_addr(in->indr_ptr[0]);
-        u32 addr = (u32)indr_block->data[
-            (block_offset - 13)*sizeof(u32)];
-        free(indr_block);
-        return addr;
+    inode *in = inode_at_num(inum);
+    resize_file(inum, offset);
+    for (int i = 0; i < size; i++) {
+        u8 byte = fgetc(inf);
+        append_data_to_file(inum, &byte, 1);
     }
-    
-    int blocknum = (block_offset - 13 - MAX_INDIR_PTRS) / MAX_INDIR_PTRS;
-    int blockpos = (block_offset - 13 - MAX_INDIR_PTRS) % MAX_INDIR_PTRS;
+}
 
-    block *doub_indr_block = block_at_addr(in->indr_ptr[1], sb->disk);
-    u32 indr_blockpos = 
-        (u32)doub_indr_block->data[blocknum*sizeof(u32)];
-
-    block *indr_block = block_at_addr(indr_blockpos, sb->disk);
-    u32 addr = (u32)indr_block->data[blockpos*sizeof(u32)];
-
-    free(indr_block);
-    free(doub_indr_block);
-    return addr;
+void append_file(int inum, FILE *inf, int size)
+{
+    inode *in = inode_at_num(inum);
+    for (int i = 0; i < size; i++) {
+        u8 byte = fgetc(inf);
+        append_data_to_file(inum, &byte, 1);
+    }
 }
 
 //this can only be used to shrink files

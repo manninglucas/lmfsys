@@ -62,7 +62,7 @@ block* new_indr_block(inode *in, int blks_needed, u32 addr,
             used_ptrs*sizeof(u32) < BLOCK_SIZE; used_ptrs++) {
         u32 ptr2data = free_bm_addr(DATA); 
         int offset = used_ptrs*sizeof(used_ptrs);
-        write_ptr_to_block(indr_blk, ptr2data, offset);
+        write_data_to_block(indr_blk, &ptr2data, sizeof(u32), offset);
 
         if (ptr_depth > 0) {
             block* ptr_blk = new_indr_block(in, blks_needed, ptr2data, 
