@@ -26,3 +26,38 @@ void create_dir_entry(const char *name, int dir_inum, int data_inum)
     free(in);
     free(dir_entry);
 }
+
+int inum_from_name(int dir_inum, const char *name)
+{
+    inode *in = inode_at_num(dir_inum); 
+    entry *entries[in->size / sizeof(entry)];
+    read_entries_into_arr(in, entries);
+    int beg = 0;
+    int end = in->size / sizeof(entry);
+    int mid = end / 2; 
+    int res;
+    //binary search dirs are sorted alphabeticall
+    while ((res = strcmp(entries[mid]->name, name))) {
+        if (res > 0) end = mid;
+        else if (res < 0) beg = mid;
+        //should throw not found error here
+        if (beg == end) break;
+    }
+    return entries[mid]->inum;
+}
+
+void read_entries_into_arr(inode *in, entry *entries[])
+{
+    block *b = block_at_addr(in->data_block[0]);
+    int i = 0;
+    int blocknum = 0;
+    for (int bytepos = 0; bytepos != in->size; 
+            bytepos+=sizeof(entry)) {
+        if (bytepos % BLOCK_SIZE == 0 && bytepos != 0)
+            b = block_at_num(++blocknum, in);
+        if (i++ % sizeof(entry) == 0 && i != 0) 
+            entries[i/sizeof(entry)] = (entry *)&b->data[bytepos % BLOCK_SIZE]; 
+    }
+    free(in);
+    free(b);
+}

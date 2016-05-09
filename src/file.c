@@ -32,16 +32,18 @@ void write_data_to_file(int inum, void *data, size_t size, int offset)
     append_data_to_file(inum, data, size);
 }
 
-void read_file(int inum, FILE *out)
+void read_file(int inum, int startpos, int endpos, FILE *out)
 {
-    inode *in = inode_at_num(inum);   
-    block *b = block_at_addr(in->data_block[0]);
-    int blocknum = 0;
-    for (int bytepos = 0; bytepos != in->size; bytepos++) {
+    inode *in = inode_at_num(inum);
+    int blocknum = startpos / BLOCK_SIZE;
+    block *b = block_at_num(blocknum, in);
+    for (int bytepos = startpos % BLOCK_SIZE; bytepos != endpos; bytepos++) {
         if (bytepos % BLOCK_SIZE == 0 && bytepos != 0)
             b = block_at_num(++blocknum, in);
-        fputc(b->data[bytepos], out); 
+        fputc(b->data[bytepos % BLOCK_SIZE], out); 
     }
+    free(in);
+    free(b);
 }
 
 void write_file(int inum, FILE *inf, int size, int offset)

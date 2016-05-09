@@ -9,4 +9,6 @@ typedef struct {
 } entry;
     
 void create_dir_entry(const char *name, int dir_inum, int data_inum);
+void read_entries_into_arr(inode *in, entry **mem);
+int inum_from_name(int dir_inum, const char *name);
 #endif

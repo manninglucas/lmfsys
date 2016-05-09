@@ -9,6 +9,7 @@
 #include "bitmap.h"
 #include "superblock.h"
 #include "directory.h"
+#include "file.h"
 
 static unsigned file_size(const char *file_name)
 {
@@ -52,6 +53,23 @@ static void create_file(u32 size, int dir_inum,
     free(in);
 }
 
+void create_file_from_file(int dir_inum, const char *name)
+{
+    FILE *infile = fopen(name, "rb+");
+    inode *in = new_inode(file_size(name), FILE_INODE);
+    create_dir_entry(name, dir_inum, in->num);
+    append_file(in->num, infile, file_size(name));
+    free(in);
+}
+
+void read_file_into_file(int dir_inum, const char *name)
+{
+    FILE *outfile = fopen(name, "rb+");
+    int inum = inum_from_name(dir_inum, name);
+    inode *in = inode_at_num(inum);
+    read_file(inum, 0, in->size, outfile);
+    free(in);
+}
 
 int main(int argc, char *argv[])
 {
@@ -59,11 +77,10 @@ int main(int argc, char *argv[])
     make_filesystem(file_size("disk"), disk);
     
     disk = fopen("disk", "rb+");
-    create_file(5000, sb->root_inum, "newfile");
-    read_inode(0);
+    create_file_from_file(sb->root_inum, "test.py");
+    read_file_into_file(sb->root_inum);
+    
     fclose(disk);
-
-    read_sb("disk");
     
     return 0;
 }
