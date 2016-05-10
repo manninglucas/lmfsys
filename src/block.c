@@ -1,10 +1,9 @@
+#include "block.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "util.h"
-#include "block.h"
+#include "superblock.h"
 #include "bitmap.h"
-#include "inode.h"
 
 block *new_block(u32 addr)
 {
@@ -26,7 +25,7 @@ void write_data_to_block(block *blk, void *data, int size, int offset)
 void write_block_to_disk(block *blk)
 {
     int block_offset = DATA_START_ADDR + (BLOCK_SIZE * blk->addr);
-    write_disk((void *)blk->data, sizeof(blk->data), sb->disk, block_offset);
+    write_disk((void *)blk->data, sizeof(blk->data), block_offset);
 }
 
 block *block_at_addr(u32 addr)
@@ -71,5 +70,7 @@ block *block_at_num(int ptrnum, inode *in)
         indr_blk = block_at_addr(*(u32*)&indr_blk->data[indr_ptrnum*sizeof(u32)]);
     }
     int pos = ptrnum % MAX_INDIR_PTRS;
-    return block_at_addr(*(u32*)&indr_blk->data[pos*sizeof(u32)]);
+    u32 addr = *(u32*)&indr_blk->data[pos*sizeof(u32)];
+    free(indr_blk);
+    return block_at_addr(addr);
 }

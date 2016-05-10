@@ -3,29 +3,28 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
-#include "util.h"
-#include "block.h"
-#include "inode.h"
-#include "bitmap.h"
 #include "superblock.h"
+#include "inode.h"
 #include "directory.h"
 #include "file.h"
 
+superblock *sb = NULL;
+
 static unsigned file_size(const char *file_name)
 {
-    struct stat sb;
+    struct stat supb;
     
-    if (stat(file_name, &sb) != 0) {
+    if (stat(file_name, &supb) != 0) {
         fprintf(stderr, "'stat' failed for '%s': %s.\n", file_name,
                strerror(errno)); 
         exit(EXIT_FAILURE);
     }
-    return sb.st_size;
+    return supb.st_size;
 }
 
 void make_filesystem(size_t disk_sz, FILE *disk)
 {
-    superblock *sb = new_superblock(disk_sz);
+    sb = new_superblock(disk_sz);
     sb->disk = disk;
 
     inode *root_in = new_inode(BLOCK_SIZE / 8, DIRECTORY_INODE);
@@ -37,7 +36,6 @@ void make_filesystem(size_t disk_sz, FILE *disk)
     write_disk((void *)sb, sizeof(superblock), 0);
 
     free(root_in);
-    free(sb);
 }
 
 static void create_file(u32 size, int dir_inum,
@@ -60,6 +58,7 @@ void create_file_from_file(int dir_inum, const char *name)
     create_dir_entry(name, dir_inum, in->num);
     append_file(in->num, infile, file_size(name));
     free(in);
+    fclose(infile);
 }
 
 void read_file_into_file(int dir_inum, const char *name)
@@ -69,6 +68,7 @@ void read_file_into_file(int dir_inum, const char *name)
     inode *in = inode_at_num(inum);
     read_file(inum, 0, in->size, outfile);
     free(in);
+    fclose(outfile);
 }
 
 int main(int argc, char *argv[])
@@ -78,9 +78,10 @@ int main(int argc, char *argv[])
     
     disk = fopen("disk", "rb+");
     create_file_from_file(sb->root_inum, "test.py");
-    read_file_into_file(sb->root_inum);
+    read_file_into_file(sb->root_inum, "output.txt");
     
     fclose(disk);
+    free(sb);
     
     return 0;
 }

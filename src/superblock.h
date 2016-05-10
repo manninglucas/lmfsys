@@ -1,24 +1,31 @@
 #ifndef SUPERBLOCK_H
 #define SUPERBLOCK_H
 
+#include <stdio.h>
+#include "util.h"
+
 typedef struct {
-    uint16_t id; //How the "OS" identifies the fs
+    u8 id; //How the "OS" identifies the fs
     char name[8];
-    uint32_t inode_count;
-    uint32_t block_count;
-    uint32_t res_block_count;
-    uint32_t block_size;
-    uint32_t first_inode;
-    uint32_t inode_size;
-    uint32_t first_block;
-    uint32_t inode_bmap;
-    uint32_t block_bmap;
-    uint32_t root_inum;
+    u32 inode_count;
+    u32 block_count;
+    u32 res_block_count;
+    u32 block_size;
+    u32 first_inode;
+    u32 inode_size;
+    u32 first_block;
+    u32 inode_bmap;
+    u32 block_bmap;
+    u32 root_inum;
     FILE *disk;
 } superblock;
 
-superblock *new_superblock(uint32_t disk_sz);
+extern superblock *sb;
+
+superblock *new_superblock(u32 disk_sz);
 
 void read_sb(const char *filename);
+superblock *filesys_sb();
+FILE *filesys_disk();
 
 #endif

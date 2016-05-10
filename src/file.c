@@ -1,13 +1,12 @@
+#include "file.h"
 #include <stdlib.h>
-#include <stdio.h>
 #include "util.h"
 #include "inode.h"
 #include "block.h"
-#include "file.h"
 
 void append_data_to_file(int inum, void *data, size_t size)
 {
-    inode *in = inode_at_num(inum, sb->disk);
+    inode *in = inode_at_num(inum);
 
     block *cur_blk = block_at_addr(in->end_block); 
     int pos = in->size % BLOCK_SIZE;
@@ -54,6 +53,7 @@ void write_file(int inum, FILE *inf, int size, int offset)
         u8 byte = fgetc(inf);
         append_data_to_file(inum, &byte, 1);
     }
+    free(in);
 }
 
 void append_file(int inum, FILE *inf, int size)
@@ -63,6 +63,7 @@ void append_file(int inum, FILE *inf, int size)
         u8 byte = fgetc(inf);
         append_data_to_file(inum, &byte, 1);
     }
+    free(in);
 }
 
 //this can only be used to shrink files
@@ -82,4 +83,5 @@ void resize_file(int inum, int new_size)
     
     write_block_to_disk(endblock);
     free(endblock);
+    free(in);
 } 

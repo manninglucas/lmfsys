@@ -1,6 +1,7 @@
+#include "util.h"
+#include "superblock.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "util.h"
 
 void write_disk(const void *data, uint32_t size, uint32_t offset)
 { 

@@ -1,11 +1,10 @@
+#include "inode.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
 #include <math.h>
-#include "util.h"
-#include "block.h"
-#include "inode.h"
+#include "superblock.h"
 #include "bitmap.h"
 
 //max size checks
@@ -53,7 +52,7 @@ void alloc_indr_blocks(inode *in, int blks_needed)
     }
 }
 
-block* new_indr_block(inode *in, int blks_needed, u32 addr,
+block *new_indr_block(inode *in, int blks_needed, u32 addr,
         int ptr_depth)
 {
     block *indr_blk = new_block(addr);
@@ -143,7 +142,7 @@ inode *inode_at_num(int inum)
 
 void read_inode(int inode_num)
 {
-    inode* inode = inode_at_num(inode_num, sb->disk);
+    inode* inode = inode_at_num(inode_num);
     printf("INODE #%i\nindirect pointer: %i\n", inode->num, inode->data_block[0]);
     free(inode);
 }

@@ -1,7 +1,7 @@
+#include "bitmap.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "util.h"
-#include "bitmap.h"
+#include "superblock.h"
 
 int free_bm_addr(BM_TYPE type)
 {
@@ -52,9 +52,6 @@ int empty_bit_pos(u8 bitmap_section)
 
 void mark_empty_at_addr(u32 addr, BM_TYPE type)
 {
-    int free_bm_addr = -1;
-    int offset = 0;
-    
     bitmap *bm = malloc(sizeof(bitmap)); 
     bm->type = type;
     fseek(sb->disk, bm_start_addr(type), SEEK_SET);

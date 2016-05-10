@@ -1,9 +1,7 @@
+#include "directory.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "util.h"
-#include "inode.h"
-#include "directory.h"
 #include "block.h"
 #include "file.h"
 
@@ -43,6 +41,7 @@ int inum_from_name(int dir_inum, const char *name)
         //should throw not found error here
         if (beg == end) break;
     }
+    free(in);
     return entries[mid]->inum;
 }
 
@@ -58,6 +57,5 @@ void read_entries_into_arr(inode *in, entry *entries[])
         if (i++ % sizeof(entry) == 0 && i != 0) 
             entries[i/sizeof(entry)] = (entry *)&b->data[bytepos % BLOCK_SIZE]; 
     }
-    free(in);
     free(b);
 }
