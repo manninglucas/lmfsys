@@ -3,7 +3,7 @@
 
 #include "util.h"
 
-typedef struct {
+typedef struct  {
     int type;
     short uid;
     int num;
@@ -13,17 +13,15 @@ typedef struct {
     int mtime;
     int dtime;
     short gid;
-    short links_count;
     int blocks;
-    int flags;
     u32 end_block;
     u32 data_block[13];
     u32 indr_ptr[MAX_PTR_DEPTH];
-} inode;
+}__attribute__((__packed__)) inode;
 
 #include "block.h"
 
-inode* new_inode(int size, int type);
+inode *new_inode(int size, enum inode_type type);
 void read_inode(int inode_num);
 inode *inode_at_num(int inum);
 
@@ -36,4 +34,6 @@ void dealloc_blocks(inode *in, int blks2remove);
 void dealloc_indr_blocks(inode *in, int blks_needed);
 void remove_indr_block(inode *in, int blks_needed, u32 addr,
         int ptr_depth);
+
+void write_inode_to_disk(inode *in);
 #endif

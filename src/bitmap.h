@@ -1,25 +1,29 @@
 #ifndef BITMAP_H
 #define BITMAP_H
-
+/*
+ * BITMAP.H
+ *
+ * PURPOSE: Data and functions to operate on the bitmap sections of
+ * the filesystem. Bitmaps keep track of which blocks on the disk are free
+ * and which ones are used. A 0 marks the number of a free section of data and 
+ * a 1 marks the number of a used one
+ *
+ */
 #include "util.h"
 
-#define INODE_BM_START BLOCK_SIZE * 1
-#define DATA_BM_START BLOCK_SIZE * 2
+#define BM_START_ADDR(x)  ((x == BM_INODE) ? INODE_BM_ADDR : DATA_BM_ADDR)
 
-typedef enum {
-    INODE,
-    DATA,
-} BM_TYPE;
+enum bitmap_type {
+    BM_INODE,
+    BM_DATA
+};
 
 typedef struct {
-    BM_TYPE type;
+    enum bitmap_type type;
     u8 data[BLOCK_SIZE];
 } bitmap;
 
-int free_bm_addr(BM_TYPE type);
-int empty_bit_pos(u8 bitmap_section);
-void flip_bit(u8 *bitmap_section, int pos);
-int bm_start_addr(BM_TYPE type);
-void mark_empty_at_addr(u32 addr, BM_TYPE type);
+int empty_bit_in_map(enum bitmap_type type);
+void flip_bit_in_map(u32 bitpos, enum bitmap_type type);
 
 #endif

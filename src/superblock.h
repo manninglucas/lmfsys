@@ -18,14 +18,12 @@ typedef struct {
     u32 block_bmap;
     u32 root_inum;
     FILE *disk;
-} superblock;
+}__attribute__((__packed__))  superblock;
 
 extern superblock *sb;
 
 superblock *new_superblock(u32 disk_sz);
 
 void read_sb(const char *filename);
-superblock *filesys_sb();
-FILE *filesys_disk();
 
 #endif

@@ -1,4 +1,5 @@
 #include "directory.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,14 +13,16 @@ void create_dir(const char *name, int parent_dir)
 
 void create_dir_entry(const char *name, int dir_inum, int data_inum)
 {
+    printf("create dir entry\n");
     inode *in = inode_at_num(data_inum);
     entry *dir_entry = malloc(sizeof(entry));
 
-    strcpy(dir_entry->name, name);
+    strncpy(dir_entry->name, name, strlen(name));
     dir_entry->strlen = strlen(name) + 1;
     dir_entry->blocks = in->blocks;
+    dir_entry->inum = data_inum;
 
-    append_data_to_file(dir_inum, (void *)dir_entry, sizeof(dir_entry));
+    append_data_to_file(dir_inum, (u8 *)dir_entry, sizeof(entry));
 
     free(in);
     free(dir_entry);
@@ -27,35 +30,38 @@ void create_dir_entry(const char *name, int dir_inum, int data_inum)
 
 int inum_from_name(int dir_inum, const char *name)
 {
+    printf("inum from name\n");
     inode *in = inode_at_num(dir_inum); 
-    entry *entries[in->size / sizeof(entry)];
+    entry entries[in->size / sizeof(entry)];
     read_entries_into_arr(in, entries);
     int beg = 0;
     int end = in->size / sizeof(entry);
     int mid = end / 2; 
     int res;
+    free(in);
     //binary search dirs are sorted alphabeticall
-    while ((res = strcmp(entries[mid]->name, name))) {
+    while ((res = strncmp(entries[mid].name, name, entries[mid].strlen))) {
         if (res > 0) end = mid;
         else if (res < 0) beg = mid;
+        else return entries[mid].inum;
         //should throw not found error here
-        if (beg == end) break;
+        if (beg == end) return -1;
     }
-    free(in);
-    return entries[mid]->inum;
+    return -1;
 }
 
-void read_entries_into_arr(inode *in, entry *entries[])
+void read_entries_into_arr(inode *in, entry entries[])
 {
-    block *b = block_at_addr(in->data_block[0]);
-    int i = 0;
+    printf("read entries into arr\n");
+    block *b = block_from_num(in->data_block[0]);
     int blocknum = 0;
+    u8 bytes[in->size];
     for (int bytepos = 0; bytepos != in->size; 
-            bytepos+=sizeof(entry)) {
+            bytepos++) {
         if (bytepos % BLOCK_SIZE == 0 && bytepos != 0)
-            b = block_at_num(++blocknum, in);
-        if (i++ % sizeof(entry) == 0 && i != 0) 
-            entries[i/sizeof(entry)] = (entry *)&b->data[bytepos % BLOCK_SIZE]; 
+            b = block_from_index(++blocknum, in);
+        bytes[bytepos] = b->data[bytepos % BLOCK_SIZE];
     }
-    free(b);
+    entries = (entry *)bytes;
+    free(b);   
 }

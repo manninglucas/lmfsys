@@ -9,9 +9,9 @@ typedef struct {
     u32 inum;
     u32 strlen;
     u32 blocks; //num of blocks allocated to file 
-} entry;
+}__attribute__((__packed__))  entry;
 
 void create_dir_entry(const char *name, int dir_inum, int data_inum);
-void read_entries_into_arr(inode *in, entry **arr);
+void read_entries_into_arr(inode *in, entry entries[]);
 int inum_from_name(int dir_inum, const char *name);
 #endif

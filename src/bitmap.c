@@ -1,63 +1,55 @@
 #include "bitmap.h"
+#include "superblock.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "superblock.h"
 
-int free_bm_addr(BM_TYPE type)
+/* NAME: EMPTY BIT IN MAP
+ * PURPOSE: Find the first 0 in the bitmap and return it's position
+ * PARAMS:
+ *      bitmap_type type: type of bitmap -- inode or data. 
+ * RETURN:
+ *      position in the empty bit in the bitmap. 
+ *      If no empty bit is found, the funcion returns -1.
+ */
+int empty_bit_in_map(enum bitmap_type type)
 {
-    int free_bm_addr = -1;
-    int offset = 0;
-    
-    bitmap *bm = malloc(sizeof(bitmap)); 
+    bitmap *bm = (bitmap *) malloc(sizeof(bitmap)); 
     bm->type = type;
-    fseek(sb->disk, bm_start_addr(type), SEEK_SET);
-    fread(bm->data, sizeof(bm->data), 1, sb->disk);
+    fseek(sb->disk, BM_START_ADDR(type), SEEK_SET);
+    fread(bm->data, sizeof(u8), sizeof(bm->data), sb->disk);
 
-    while (free_bm_addr == -1) {
-        u8 bm_section = bm->data[offset]; 
-
-        int bit_pos = empty_bit_pos(bm_section);
-
-        if (bit_pos == -1) {
-            offset++;
-         } else {
-            free_bm_addr = bit_pos + (sizeof(u8)*offset);
-            flip_bit(&bm_section, bit_pos);
-            bm->data[offset] = bm_section;
-         }
-    }       
-    write_disk((void *)bm->data, sizeof(bm->data), bm_start_addr(type));
+    for (int bytepos = 0; bytepos != BLOCK_SIZE; bytepos++) {
+        u8 byte = bm->data[bytepos]; 
+        //if the byte is completely full we can just skip it
+        if (byte == 0xFF) continue;
+        int bitpos;
+        //this operation first masks the byte with the bit at pos 0-7
+        //then shifts the desired bit back to the 1 position. If it's
+        //0 we want that pos.
+        for (bitpos = 0; bitpos < 8; bitpos++)
+            if (!((byte & (1 << bitpos)) >> bitpos)) break;
+        free(bm);
+        return bytepos * 8 + bitpos;
+    }
     free(bm);
-    return free_bm_addr;
-}
-
-int bm_start_addr(BM_TYPE type)
-{
-    if (type == INODE) return INODE_BM_START;
-    else return DATA_BM_START;
-}
-
-void flip_bit(u8 *bitmap_section, int pos)
-{
-   (*bitmap_section) ^= (1 << pos); 
-}
-
-int empty_bit_pos(u8 bitmap_section)
-{
-    for (int i = 0; i < 8; i++) {
-        if ((~bitmap_section >> i) & 1) return i;
-    } 
     return -1;
 }
 
-void mark_empty_at_addr(u32 addr, BM_TYPE type)
+/* NAME: FLIP BIT IN MAP
+ * PURPOSE: flip a bit within a bitmap at selected pos.
+ * PARAMS:
+ *      bitmap_type type: type of bitmap -- inode or data. 
+ *      u32 bitpos: position of bit within bitmap
+ */
+void flip_bit_in_map(u32 bitpos, enum bitmap_type type)
 {
     bitmap *bm = malloc(sizeof(bitmap)); 
     bm->type = type;
-    fseek(sb->disk, bm_start_addr(type), SEEK_SET);
-    fread(bm->data, sizeof(bm->data), 1, sb->disk);
+    fseek(sb->disk, BM_START_ADDR(type), SEEK_SET);
+    fread(bm->data, sizeof(u8), sizeof(bm->data), sb->disk);
     
-    flip_bit(&bm->data[addr / 8], addr % 8);
-    write_disk((void *)bm->data, sizeof(bm->data), bm_start_addr(type));
+    (bm->data[bitpos / 8]) ^= 1 << (bitpos % 8);
+    write_disk(bm->data, sizeof(bm->data), BM_START_ADDR(type));
     free(bm);
 }
+
