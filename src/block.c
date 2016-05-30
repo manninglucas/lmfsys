@@ -69,30 +69,42 @@ block *block_from_num(u32 num)
 block *block_from_index(u32 index, inode *in)
 {
     //first parts easy enough just grab the next data block
-    if (index < 13) 
+    if (index < 13)
         return block_from_num(in->data_block[index]);
+
     //subtract the blocks that arent in the block of pointers
     index -= 13;
+
     //maximum amount of pointers on a depth level. on the second level its 
     //MAX_INDIR_PTRS^2
     int max_ptrs = MAX_INDIR_PTRS;
     int depth;
+
+    //calculate the indirect depth level of the pointer
     for (depth = 0; depth != MAX_PTR_DEPTH; depth++, max_ptrs*=MAX_INDIR_PTRS)
         if (index / max_ptrs == 0) break;
     
-    //now that we have the depth we can loop through the pointer depth levels
+    //get the first indirect block
     block *indr_blk = block_from_num(in->indr_ptr[depth]);
-    //the position within the block of pointers of the next data block
+
+    //this subtracts the the indicies from the other blocks so the index is only
+    //within the block we are searching in.
     if (depth)
         index -= pow(MAX_INDIR_PTRS, depth);
-    for (int i = 0; i < depth; i++){
+
+    //loops through depth levels to find the index of the block we are seaching
+    //for.
+    for (int i = 0; i < depth; i++) {
         int indr_ptrnum = index / pow(MAX_INDIR_PTRS, MAX_PTR_DEPTH - (i+1));
-        indr_blk = block_from_num(*(u32*)&indr_blk->data[indr_ptrnum*sizeof(u32)]);
+        u32 num = (u32) indr_blk->data[indr_ptrnum * sizeof(u32)];
+        indr_blk = block_from_num(num);
     }
+
     int pos = index % MAX_INDIR_PTRS;
-    u32 addr = *(u32*)&indr_blk->data[pos*sizeof(u32)];
+    u32 num = (u32) indr_blk->data[pos * sizeof(u32)];
     free(indr_blk);
-    return block_from_num(addr);
+
+    return block_from_num(num);
 }
 
 /* NAME: WRITE DATA TO BLOCK
@@ -108,7 +120,7 @@ void write_data_to_block(block *blk, void *data, u32 size, u32 offset)
 {
     u8 *bytes = (u8 *) data;
     for (int i = 0; i < size; i++)
-        blk->data[offset+i] = *(bytes+i); 
+        blk->data[offset+i] = *(bytes+i);
 }
 
 /* NAME: ERASE BLOCK
@@ -120,9 +132,7 @@ void write_data_to_block(block *blk, void *data, u32 size, u32 offset)
 void erase_block(block *blk)
 {
     for (int i = 0; i < BLOCK_SIZE; ++i)
-       blk->data[i] = 0; 
-
-    flip_bit_in_map(blk->num, BM_DATA);
+       blk->data[i] = 0;
     
     write_block_to_disk(blk);
 }

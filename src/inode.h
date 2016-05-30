@@ -1,6 +1,13 @@
 #ifndef INODE_H
 #define INODE_H
-
+/*
+ * INODE.H
+ * 
+ * PURPOSE: Inodes are structures stored in a special partition of the filesystem.
+ * They are used to store information about a particular file like it's size and the
+ * last time the file was allocated. Functions in this file deal with the CRUD of
+ * inodes as well as the the manipulation of the inode table as a whole.
+ */
 #include "util.h"
 
 typedef struct  {
@@ -21,19 +28,21 @@ typedef struct  {
 
 #include "block.h"
 
-inode *new_inode(int size, enum inode_type type);
-void read_inode(int inode_num);
-inode *inode_at_num(int inum);
+//CREATE
+void alloc_blocks(inode *in, u32 blks_needed);
+void alloc_indr_blocks(inode *in, u32 blks_needed);
+block *new_indr_block(inode *in, u32 blks_needed, u32 addr, u32 ptr_depth);
+inode *new_inode(u32 size, enum inode_type type);
 
-void alloc_blocks(inode *in, int blks_needed);
-void alloc_indr_blocks(inode *in, int blks_needed);
-block *new_indr_block(inode *in, int blks_needed, u32 addr,
-        int ptr_depth);
+//READ
+inode *inode_at_num(u32 num);
 
-void dealloc_blocks(inode *in, int blks2remove);
-void dealloc_indr_blocks(inode *in, int blks_needed);
-void remove_indr_block(inode *in, int blks_needed, u32 addr,
-        int ptr_depth);
-
+//UPDATE
 void write_inode_to_disk(inode *in);
+
+//DELETE
+void dealloc_blocks(inode *in, u32 blks2remove);
+void dealloc_indr_blocks(inode *in, u32 blks_needed);
+void remove_indr_block(inode *in, u32 blks_needed, u32 addr, u32 ptr_depth);
+
 #endif

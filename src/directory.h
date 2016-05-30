@@ -1,6 +1,8 @@
 #ifndef DIRECTORY_H
 #define DIRECTORY_H
-
+/*
+ * PRUPOSE: to
+ * */
 #include "inode.h"
 #include "util.h"
 

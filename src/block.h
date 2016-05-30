@@ -18,7 +18,7 @@ typedef struct {
 #include "inode.h"
 
 //CREATE
-block *new_block(u32 addr);
+block *new_block(u32 num);
 void write_block_to_disk(block *blk);
 
 //READ
