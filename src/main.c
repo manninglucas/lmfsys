@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     /* printf("inode: num: %i, size: %i, blocks: %i, end addr: %i\n",  */
     /*         in->num, in->size, in->blocks, in->end_block); */
     create_file_from_file(sb->root_inum, "test.py");
-    //read_file_into_file(sb->root_inum, "test.py", "output.txt");
+    read_file_into_file(sb->root_inum, "test.py", "output.txt");
      
     fclose(disk);
     free(sb);

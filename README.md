@@ -1,5 +1,7 @@
 # lmfsys
 
+## This project has been abandoned.
+
 A toy virtual UNIX filesystem.
 
 ## Design

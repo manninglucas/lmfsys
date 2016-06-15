@@ -30,7 +30,7 @@ void make_filesystem(u32 size, FILE *disk)
     sb = new_superblock(size);
     sb->disk = disk;
 
-    inode *root_inode = new_inode(DIR_SIZE, DIR_INODE);
+    inode *root_inode = new_inode(0, DIR_INODE);
     write_inode_to_disk(root_inode);
 
     sb->root_inum = root_inode->num;

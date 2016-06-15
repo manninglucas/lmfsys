@@ -112,5 +112,7 @@ void test_block_write(block *blk)
 void test_inode()
 {
     inode *in = new_inode(0x4000, FILE_INODE);
+    printf("write inode to disk\n");
+    write_inode_to_disk(in);
 
 }
